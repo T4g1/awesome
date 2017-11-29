@@ -68,7 +68,7 @@ local terminal     = "xterm"
 local editor       = os.getenv("EDITOR") or "nano"
 local gui_editor   = "gvim"
 local browser      = "chromium"
-local guieditor    = "atom"
+local guieditor    = "subl3"
 
 local browser_screen = 1
 local editor_screen = 2
@@ -102,9 +102,14 @@ awful.tag.add("EDITOR", {
     screen             = editor_screen,
     selected           = editor_selected,
 })
+
 for i=1,screen:count() do
-  awful.tag.add("OTHER", { layout = awful.layout.suit.floating, screen = i })
+  awful.tag.add("OTHER", { layout = lain.layout.termfair.center, screen = i })
+  for j=1,5 do
+    awful.tag.add(j, { layout = lain.layout.termfair.center, screen = i })
+  end
 end
+
 awful.layout.layouts = {
     awful.layout.suit.floating,
     awful.layout.suit.tile,
