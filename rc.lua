@@ -1,7 +1,7 @@
 
 --[[
 
-     Awesome WM configuration template
+     Awesome WM configuration T4g1
      github.com/copycat-killer
 
 --]]
@@ -90,7 +90,7 @@ awful.util.tagnames = {}
 awful.tag.add("TERMINAL", {
     layout             = lain.layout.termfair.center,
     screen             = 1,
-    selected           = true,
+    selected           = false,
 })
 awful.tag.add("BROWSER", {
     layout             = awful.layout.suit.floating,
@@ -238,6 +238,50 @@ end)
 -- Create a wibox for each screen and add it
 awful.screen.connect_for_each_screen(function(s) beautiful.at_screen_connect(s) end)
 -- }}}
+
+-- configuration - edit to your liking
+wp_index = 1
+wp_timeout  = 3600
+wp_path = "/home/t4g1/images/wallpapers/"
+wp_files = {
+  "1.png",
+  "1.jpg",
+  "2.jpg",
+  "3.jpg",
+  "4.jpg",
+  "5.jpg",
+  "6.jpg",
+  "7.jpg",
+  --"8.jpg",
+  "9.jpg",
+  "10.jpg",
+  "wallhaven-3326.jpg",
+}
+
+-- setup the timer
+wp_timer = timer { timeout = wp_timeout }
+local function setWallpapers()
+  -- set wallpaper to current index for all screens
+  local taken = {}
+  for s = 1, screen.count() do
+    -- get next random index
+    wp_index = math.random( 1, #wp_files)
+    while taken[wp_index] do
+      wp_index = math.random( 1, #wp_files)
+    end
+    taken[wp_index] = true
+    gears.wallpaper.maximized(wp_path .. wp_files[wp_index], s, true)
+  end
+
+  -- stop the timer (we don't need multiple instances running at the same time)
+  wp_timer:stop()
+
+  --restart the timer
+  wp_timer.timeout = wp_timeout
+  wp_timer:start()
+end
+wp_timer:connect_signal("timeout", setWallpapers)
+setWallpapers()
 
 -- {{{ Mouse bindings
 root.buttons(awful.util.table.join(
@@ -389,9 +433,9 @@ globalkeys = awful.util.table.join(
     awful.key({ modkey, }, "z", function () awful.screen.focused().quake:toggle() end),
 
     -- Widgets popups
-    awful.key({ altkey, }, "c", function () lain.widget.calendar.show(7) end),
-    awful.key({ altkey, }, "h", function () if beautiful.fs then beautiful.fs.show(7) end end),
-    awful.key({ altkey, }, "w", function () if beautiful.weather then beautiful.weather.show(7) end end),
+--    awful.key({ altkey, }, "c", function () lain.widget.calendar.show(7) end),
+--    awful.key({ altkey, }, "h", function () if beautiful.fs then beautiful.fs.show(7) end end),
+--    awful.key({ altkey, }, "w", function () if beautiful.weather then beautiful.weather.show(7) end end),
 
     -- ALSA volume control
 --    awful.key({ altkey }, "Up",
@@ -492,6 +536,9 @@ globalkeys = awful.util.table.join(
 )
 
 clientkeys = awful.util.table.join(
+    awful.key({ modkey, "Control" }, "t",
+      awful.titlebar.toggle,
+      {description = "Toggle title bar", group = "client"}),
     awful.key({ altkey, "Shift"   }, "m",      lain.util.magnify_client                         ),
     awful.key({ modkey,           }, "f",
         function (c)
@@ -606,20 +653,43 @@ awful.rules.rules = {
 
     -- Auto tags
     { rule = { role = "browser", type = "normal" },
-      properties = { screen = browser_screen, tag = "BROWSER", maximised = true,
-titlebars_enabled =
-false } },
-
-    { rule = { class = "XTerm" },
-      properties = { screen = 1, tag = "TERMINAL", titlebars_enabled = false } },
+      properties = {
+        screen = browser_screen,
+        tag = "BROWSER",
+        maximised = true,
+        titlebars_enabled = false,
+        floating = false
+      }
+    },
 
     { rule = { class = "Subl3", type = "normal" },
-      properties = { screen = editor_screen, tag = "EDITOR", maximised = true,
-titlebars_enabled
-= false } },
-
+      properties = {
+        screen = editor_screen,
+        tag = "EDITOR",
+        maximised = true,
+        titlebars_enabled = false,
+        floating = false
+      }
+    },
 }
 -- }}}
+
+-- Toggle titlebar on or off depending on s. Creates titlebar if it doesn't exist
+local function setTitlebar(client, s)
+    if s then
+        if client.titlebar == nil then
+            client:emit_signal("request::titlebars", "rules", {})
+        end
+        awful.titlebar.show(client)
+    else
+        awful.titlebar.hide(client)
+    end
+end
+
+--Toggle titlebar on floating status change
+client.connect_signal("property::floating", function(c)
+    setTitlebar(c, c.floating)
+end)
 
 -- {{{ Signals
 -- Signal function to execute when a new client appears.
@@ -627,6 +697,17 @@ client.connect_signal("manage", function (c)
     -- Set the windows at the slave,
     -- i.e. put it at the end of others instead of setting it master.
     -- if not awesome.startup then awful.client.setslave(c) end
+    setTitlebar(c,
+      c.floating or
+      (
+        c.first_tag.layout == awful.layout.suit.floating and
+        c.class ~= "Subl3" and
+        (
+          c.role ~= "browser" or
+          c.type ~= "normal"
+        )
+      )
+    )
 
     if awesome.startup and
       not c.size_hints.user_position
@@ -634,6 +715,8 @@ client.connect_signal("manage", function (c)
         -- Prevent clients from being unreachable after screen count changes.
         awful.placement.no_offscreen(c)
     end
+
+
 end)
 
 -- Add a titlebar if titlebars_enabled is set to true in the rules.

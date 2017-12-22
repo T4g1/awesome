@@ -19,4 +19,3 @@ function run {
 
 run chromium
 run subl3
-run xterm 4
