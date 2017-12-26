@@ -271,8 +271,8 @@ batwidget = wibox.container.margin(batwidget, 0, 0, 5, 5)
 -- ALSA volume bar
 local volume_icon = wibox.widget.imagebox(theme.widget_vol)
 theme.volume = lain.widget.alsa({
-    cmd = "amixer -c 1",
-    --togglechannel = "IEC958,3",
+    cmd = "amixer -D pulse",
+    --togglechannel = "Headset",
     settings = function()
         vol = volume_now.level .. "% "
         if volume_now.status == "off" then
@@ -291,7 +291,7 @@ theme.volume.widget:buttons(awful.util.table.join(
         theme.volume.update()
     end),
     awful.button({}, 1, function() -- left click
-        awful.spawn(string.format("%s -D pulse set %s toggle", theme.volume.cmd, theme.volume.channel))
+        awful.spawn(string.format("%s set %s toggle", theme.volume.cmd, theme.volume.channel))
         theme.volume.update()
         theme.volume.update()
         theme.volume.update()
