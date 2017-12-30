@@ -21,6 +21,7 @@ local lain          = require("lain")
 local freedesktop   = require("freedesktop")
 local hotkeys_popup = require("awful.hotkeys_popup").widget
 local remote = require("awful.remote")
+local lfs = require("lfs")
 -- }}}
 
 -- {{{ Error handling
@@ -243,20 +244,10 @@ awful.screen.connect_for_each_screen(function(s) beautiful.at_screen_connect(s) 
 wp_index = 1
 wp_timeout  = 3600
 wp_path = "/home/t4g1/images/wallpapers/"
-wp_files = {
-  "1.png",
-  "1.jpg",
-  "2.jpg",
-  "3.jpg",
-  "4.jpg",
-  "5.jpg",
-  "6.jpg",
-  "7.jpg",
-  --"8.jpg",
-  "9.jpg",
-  "10.jpg",
-  "wallhaven-3326.jpg",
-}
+wp_files = {}
+for file in lfs.dir(wp_path) do
+  table.insert(wp_files, file)
+end
 
 -- setup the timer
 wp_timer = timer { timeout = wp_timeout }
