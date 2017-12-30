@@ -255,7 +255,8 @@ fswidget = wibox.container.margin(fswidget, 0, 0, 5, 5)
 -- Battery
 local bat_icon = wibox.widget.imagebox(theme.widget_batt)
 local bat = lain.widget.bat({
-    --ac = "AC",
+    batteries = {"BAT", "BAT0"},
+    ac = "AC",
     timeout = 1,
     settings = function()
         bat_p      = bat_now.perc .. "% "
