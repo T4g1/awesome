@@ -240,20 +240,16 @@ end)
 awful.screen.connect_for_each_screen(function(s) beautiful.at_screen_connect(s) end)
 -- }}}
 
--- configuration - edit to your liking
-wp_index = 1
-wp_timeout  = 3600
 wp_path = "/home/t4g1/images/wallpapers/"
-wp_files = {}
-for file in lfs.dir(wp_path) do
-  table.insert(wp_files, file)
-end
+set_wallpaper = function()
+  wp_files = {}
+  for file in lfs.dir(wp_path) do
+    table.insert(wp_files, file)
+  end
 
--- setup the timer
-wp_timer = timer { timeout = wp_timeout }
-local function setWallpapers()
   -- set wallpaper to current index for all screens
   local taken = {}
+  local wp_index = 1
   for s = 1, screen.count() do
     -- get next random index
     wp_index = math.random( 1, #wp_files)
@@ -263,16 +259,14 @@ local function setWallpapers()
     taken[wp_index] = true
     gears.wallpaper.maximized(wp_path .. wp_files[wp_index], s, true)
   end
-
-  -- stop the timer (we don't need multiple instances running at the same time)
-  wp_timer:stop()
-
-  --restart the timer
-  wp_timer.timeout = wp_timeout
-  wp_timer:start()
 end
-wp_timer:connect_signal("timeout", setWallpapers)
-setWallpapers()
+
+wp_timer = gears.timer {
+    timeout   = 3600,
+    autostart = true,
+    callback  = set_wallpaper
+}
+set_wallpaper()
 
 -- {{{ Mouse bindings
 root.buttons(awful.util.table.join(
