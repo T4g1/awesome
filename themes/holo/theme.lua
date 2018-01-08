@@ -243,7 +243,12 @@ kbdwidget = wibox.container.margin(kbdwidget, 0, 0, 5, 5)
 local fs_icon = wibox.widget.imagebox(theme.widget_fs)
 theme.fs = lain.widget.fs({
     options = "--exclude-type=tmpfs",
-    notification_preset = { bg = theme.bg_normal, font = "Monospace 9, " },
+    followtag = true,
+    notification_preset = {
+        bg = theme.bg_normal,
+        font = "Consolas 10",
+        fg   = "#FFFFFF",
+    },
     settings  = function()
         local home_used = tonumber(fs_info["/home used_p"]) or 0
         widget:set_markup(markup.font(theme.font, " " .. fs_now.used .. "% "))
