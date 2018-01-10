@@ -10,7 +10,9 @@ local gears  = require("gears")
 local lain   = require("lain")
 local awful  = require("awful")
 local wibox  = require("wibox")
+local gpmdp  = require("gpmdp")
 local string = string
+local clock = os.clock
 local os     = { getenv = os.getenv }
 
 local theme                                     = {}
@@ -174,53 +176,67 @@ local next_icon = wibox.widget.imagebox(theme.nex)
 local stop_icon = wibox.widget.imagebox(theme.stop)
 local pause_icon = wibox.widget.imagebox(theme.pause)
 local play_pause_icon = wibox.widget.imagebox(theme.play)
-theme.mpd = lain.widget.mpd({
-    settings = function ()
-        if mpd_now.state == "play" then
-            mpd_now.artist = mpd_now.artist:upper():gsub("&.-;", string.lower)
-            mpd_now.title = mpd_now.title:upper():gsub("&.-;", string.lower)
-            widget:set_markup(markup.font("Roboto 4", " ")
-                              .. markup.font(theme.taglist_font,
-                              " " .. mpd_now.artist
-                              .. " - " ..
-                              mpd_now.title .. "  ") .. markup.font("Roboto 5", " "))
+gpmdp.settings = function ()
+    if not gpmdp.latest.running then
+        gpmdp.widget:set_text("No tracks")
+    else
+        if gpmdp.latest.playing then
+            gpmdp.widget:set_text(gpm_now.artist .. " - " .. gpm_now.title)
             play_pause_icon:set_image(theme.pause)
-        elseif mpd_now.state == "pause" then
-            widget:set_markup(markup.font("Roboto 4", " ") ..
-                              markup.font(theme.taglist_font, " MPD PAUSED  ") ..
-                              markup.font("Roboto 5", " "))
-            play_pause_icon:set_image(theme.play)
         else
-            widget:set_markup("")
+            gpmdp.widget:set_text("PAUSED - " .. gpm_now.artist .. " - " .. gpm_now.title)
             play_pause_icon:set_image(theme.play)
         end
     end
-})
-local musicbg = wibox.container.background(theme.mpd.widget, theme.bg_focus, gears.shape.rectangle)
+end
+function nnnnnn()
+    if mpd_now.state == "play" then
+        mpd_now.artist = mpd_now.artist:upper():gsub("&.-;", string.lower)
+        mpd_now.title = mpd_now.title:upper():gsub("&.-;", string.lower)
+        widget:set_markup(markup.font("Roboto 4", " ")
+                          .. markup.font(theme.taglist_font,
+                          " " .. mpd_now.artist
+                          .. " - " ..
+                          mpd_now.title .. "  ") .. markup.font("Roboto 5", " "))
+        play_pause_icon:set_image(theme.pause)
+    elseif mpd_now.state == "pause" then
+        widget:set_markup(markup.font("Roboto 4", " ") ..
+                          markup.font(theme.taglist_font, " MPD PAUSED  ") ..
+                          markup.font("Roboto 5", " "))
+        play_pause_icon:set_image(theme.play)
+    else
+        widget:set_markup("")
+        play_pause_icon:set_image(theme.play)
+    end
+end
+
+-- Music
+local music_icon = wibox.widget.imagebox(theme.mpdl)
+local musicbg = wibox.container.background(gpmdp.widget, theme.bg_focus, gears.shape.rectangle)
 local musicwidget = wibox.container.margin(musicbg, 0, 0, 5, 5)
 
 musicwidget:buttons(awful.util.table.join(awful.button({ }, 1,
-function () awful.spawn(theme.musicplr) end)))
+function ()
+    awful.spawn(theme.musicplr)
+end)))
 prev_icon:buttons(awful.util.table.join(awful.button({}, 1,
 function ()
-    awful.spawn.with_shell("mpc prev")
-    theme.mpd.update()
+    awful.spawn.with_shell("xdotool key alt+ctrl+Left")
+    gpmdp.widget:set_text("Previous...")
 end)))
 next_icon:buttons(awful.util.table.join(awful.button({}, 1,
 function ()
-    awful.spawn.with_shell("mpc next")
-    theme.mpd.update()
+    awful.spawn.with_shell("xdotool key alt+ctrl+Right")
+    gpmdp.widget:set_text("Next...")
 end)))
 stop_icon:buttons(awful.util.table.join(awful.button({}, 1,
 function ()
     play_pause_icon:set_image(theme.play)
-    awful.spawn.with_shell("mpc stop")
-    theme.mpd.update()
+    awful.spawn.with_shell("xdotool key alt+ctrl+Down")
 end)))
 play_pause_icon:buttons(awful.util.table.join(awful.button({}, 1,
 function ()
-    awful.spawn.with_shell("mpc toggle")
-    theme.mpd.update()
+    awful.spawn.with_shell("xdotool key alt+ctrl+Up")
 end)))
 
 -- keyboard layout
@@ -406,33 +422,38 @@ function theme.at_screen_connect(s)
             s.mytag,
             spr_right,
             s.mylayoutbox,
+
+            spr_left,
+            mpd_icon,
+            musicwidget,
+            bar,
+            prev_icon,
+            next_icon,
+            stop_icon,
+            play_pause_icon,
             spr_small,
+
             s.mypromptbox,
         },
-        nil, -- Middle widget
+        { -- Middle widgets
+            layout = wibox.layout.flex.horizontal,
+        },
         { -- Right widgets
             layout = wibox.layout.fixed.horizontal,
-            wibox.widget.systray(),
+
+            --wibox.widget.systray(),
             --mail.widget,
-            --theme.fs.widget,
-            --spr_right,
-            --musicwidget,
-            --bar,
-            --prev_icon,
-            --next_icon,
-            --stop_icon,
-            --play_pause_icon,
-            --bar,
-            --mpd_icon,
-            --bar,
-            --spr_very_small,
+
+            spr_right,
             kbd_icon,
             kbdwidget,
-            spr_right,
+            spr_left,
+
             netdown_icon,
             networkwidget,
             netup_icon,
             spr_left,
+
             cpu_icon,
             cpuwidget,
             spr_left,

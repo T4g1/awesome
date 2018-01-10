@@ -17,6 +17,7 @@ local wibox         = require("wibox")
 local beautiful     = require("beautiful")
 local naughty       = require("naughty")
 local lain          = require("lain")
+local lol = require("gpmdp")
 --local menubar       = require("menubar")
 local freedesktop   = require("freedesktop")
 local hotkeys_popup = require("awful.hotkeys_popup").widget
@@ -450,38 +451,38 @@ globalkeys = awful.util.table.join(
 --        end),
 
     -- MPD control
-    awful.key({ altkey, "Control" }, "Up",
-        function ()
-            awful.spawn.with_shell("mpc toggle")
-            beautiful.mpd.update()
-        end),
-    awful.key({ altkey, "Control" }, "Down",
-        function ()
-            awful.spawn.with_shell("mpc stop")
-            beautiful.mpd.update()
-        end),
-    awful.key({ altkey, "Control" }, "Left",
-        function ()
-            awful.spawn.with_shell("mpc prev")
-            beautiful.mpd.update()
-        end),
-    awful.key({ altkey, "Control" }, "Right",
-        function ()
-            awful.spawn.with_shell("mpc next")
-            beautiful.mpd.update()
-        end),
-    awful.key({ altkey }, "0",
-        function ()
-            local common = { text = "MPD widget ", position = "top_middle", timeout = 2 }
-            if beautiful.mpd.timer.started then
-                beautiful.mpd.timer:stop()
-                common.text = common.text .. lain.util.markup.bold("OFF")
-            else
-                beautiful.mpd.timer:start()
-                common.text = common.text .. lain.util.markup.bold("ON")
-            end
-            naughty.notify(common)
-        end),
+    --awful.key({ altkey, "Control" }, "Up",
+    --    function ()
+    --        awful.spawn.with_shell("mpc toggle")
+    --        beautiful.mpd.update()
+    --    end),
+    --awful.key({ altkey, "Control" }, "Down",
+    --    function ()
+    --        awful.spawn.with_shell("mpc stop")
+    --        beautiful.mpd.update()
+    --    end),
+    --awful.key({ altkey, "Control" }, "Left",
+    --    function ()
+    --        awful.spawn.with_shell("mpc prev")
+    --        beautiful.mpd.update()
+    --    end),
+    --awful.key({ altkey, "Control" }, "Right",
+    --    function ()
+    --        awful.spawn.with_shell("mpc next")
+    --        beautiful.mpd.update()
+    --    end),
+    --awful.key({ altkey }, "0",
+    --    function ()
+    --        local common = { text = "MPD widget ", position = "top_middle", timeout = 2 }
+    --        if beautiful.mpd.timer.started then
+    --            beautiful.mpd.timer:stop()
+    --            common.text = common.text .. lain.util.markup.bold("OFF")
+    --        else
+    --            beautiful.mpd.timer:start()
+    --            common.text = common.text .. lain.util.markup.bold("ON")
+    --        end
+    --        naughty.notify(common)
+    --    end),
 
     -- Copy primary to clipboard (terminals to gtk)
     awful.key({ modkey }, "c", function () awful.spawn("xsel | xsel -i -b") end),
@@ -505,18 +506,18 @@ globalkeys = awful.util.table.join(
     --]]
     -- Prompt
     awful.key({ modkey }, "r", function () awful.screen.focused().mypromptbox:run() end,
-              {description = "run prompt", group = "launcher"}),
+              {description = "run prompt", group = "launcher"})
 
-    awful.key({ modkey }, "x",
-              function ()
-                  awful.prompt.run {
-                    prompt       = "Run Lua code: ",
-                    textbox      = awful.screen.focused().mypromptbox.widget,
-                    exe_callback = awful.util.eval,
-                    history_path = awful.util.get_cache_dir() .. "/history_eval"
-                  }
-              end,
-              {description = "lua execute prompt", group = "awesome"})
+    --awful.key({ modkey }, "x",
+    --          function ()
+    --              awful.prompt.run {
+    --                prompt       = "Run Lua code: ",
+    --                textbox      = awful.screen.focused().mypromptbox.widget,
+    --                exe_callback = awful.util.eval,
+    --                history_path = awful.util.get_cache_dir() .. "/history_eval"
+    --              }
+    --          end,
+    --          {description = "lua execute prompt", group = "awesome"})
     --]]
 )
 
@@ -655,7 +656,7 @@ awful.rules.rules = {
         titlebars_enabled = false,
         floating = false
       }
-    },
+    }
 }
 -- }}}
 
