@@ -124,7 +124,7 @@ end
 gpmdp.widget = awful.widget.watch({"pidof", "Google Play Music Desktop Player"}, 1, gpmdp.update)
 
 -- add mouse hover
-gpmdp.widget:connect_signal("mouse::enter", gpmdp.notification_on)
-gpmdp.widget:connect_signal("mouse::leave", gpmdp.notification_off)
+--gpmdp.widget:connect_signal("mouse::enter", gpmdp.notification_on)
+--gpmdp.widget:connect_signal("mouse::leave", gpmdp.notification_off)
 
 return gpmdp
