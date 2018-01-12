@@ -58,6 +58,8 @@ function gpmdp.update(widget, stdout)
         gpm_now.album     = dict.song.album
         gpm_now.title     = dict.song.title
         gpm_now.cover_url = dict.song.albumArt
+        gpm_now.liked     = dict.rating.liked
+        gpm_now.disliked  = dict.rating.disliked
         gpm_now.playing   = dict.playing
     end
     gpmdp.latest = gpm_now

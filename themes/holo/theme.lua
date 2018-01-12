@@ -55,6 +55,10 @@ theme.nex                                       = theme.icon_dir .. "/next.png"
 theme.stop                                      = theme.icon_dir .. "/stop.png"
 theme.pause                                     = theme.icon_dir .. "/pause.png"
 theme.play                                      = theme.icon_dir .. "/play.png"
+theme.like                                      = theme.icon_dir .. "/like.png"
+theme.liked                                     = theme.icon_dir .. "/liked.png"
+theme.dislike                                   = theme.icon_dir .. "/dislike.png"
+theme.disliked                                  = theme.icon_dir .. "/disliked.png"
 theme.clock                                     = theme.icon_dir .. "/clock.png"
 theme.calendar                                  = theme.icon_dir .. "/cal.png"
 theme.cpu                                       = theme.icon_dir .. "/cpu.png"
@@ -177,6 +181,9 @@ local next_icon = wibox.widget.imagebox(theme.nex)
 local stop_icon = wibox.widget.imagebox(theme.stop)
 local pause_icon = wibox.widget.imagebox(theme.pause)
 local play_pause_icon = wibox.widget.imagebox(theme.play)
+local like_icon = wibox.widget.imagebox(theme.like)
+local dislike_icon = wibox.widget.imagebox(theme.dislike)
+
 gpmdp.settings = function ()
     local gpm_now = gpmdp.latest
     if gpmdp.latest.playing then
@@ -188,6 +195,19 @@ gpmdp.settings = function ()
             gpmdp.widget:set_text("PAUSED - " .. gpm_now.artist .. " - " .. gpm_now.title)
         else
             gpmdp.widget:set_text("No tracks")
+        end
+    end
+
+    if gpm_now.artist ~= nil then
+        if gpm_now.liked then
+            like_icon:set_image(theme.liked)
+            dislike_icon:set_image(theme.dislike)
+        elseif gpm_now.disliked then
+            like_icon:set_image(theme.like)
+            dislike_icon:set_image(theme.disliked)
+        else
+            like_icon:set_image(theme.like)
+            dislike_icon:set_image(theme.dislike)
         end
     end
 end
@@ -217,6 +237,14 @@ end)))
 play_pause_icon:buttons(awful.util.table.join(awful.button({}, 1,
 function ()
     awful.spawn.with_shell("xdotool key alt+ctrl+Up")
+end)))
+like_icon:buttons(awful.util.table.join(awful.button({ }, 1,
+function ()
+    awful.spawn.with_shell("xdotool key alt+ctrl+l")
+end)))
+dislike_icon:buttons(awful.util.table.join(awful.button({ }, 1,
+function ()
+    awful.spawn.with_shell("xdotool key alt+ctrl+d")
 end)))
 
 -- keyboard layout
@@ -416,6 +444,8 @@ function theme.at_screen_connect(s)
             next_icon,
             stop_icon,
             play_pause_icon,
+            like_icon,
+            dislike_icon,
             spr_small,
 
             s.mypromptbox,
