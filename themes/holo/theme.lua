@@ -10,6 +10,7 @@ local gears  = require("gears")
 local lain   = require("lain")
 local awful  = require("awful")
 local wibox  = require("wibox")
+local beautiful  = require("beautiful")
 local gpmdp  = require("gpmdp")
 local string = string
 local clock = os.clock
@@ -169,7 +170,7 @@ local mail = lain.widget.imap({
 })
 --]]
 
--- MPD
+-- Music
 local mpd_icon = awful.widget.launcher({ image = theme.mpdl, command = theme.musicplr })
 local prev_icon = wibox.widget.imagebox(theme.prev)
 local next_icon = wibox.widget.imagebox(theme.nex)
@@ -177,40 +178,19 @@ local stop_icon = wibox.widget.imagebox(theme.stop)
 local pause_icon = wibox.widget.imagebox(theme.pause)
 local play_pause_icon = wibox.widget.imagebox(theme.play)
 gpmdp.settings = function ()
-    if not gpmdp.latest.running then
-        gpmdp.widget:set_text("No tracks")
+    local gpm_now = gpmdp.latest
+    if gpmdp.latest.playing then
+        gpmdp.widget:set_text(gpm_now.artist .. " - " .. gpm_now.title)
+        play_pause_icon:set_image(theme.pause)
     else
-        if gpmdp.latest.playing then
-            gpmdp.widget:set_text(gpm_now.artist .. " - " .. gpm_now.title)
-            play_pause_icon:set_image(theme.pause)
-        else
+        play_pause_icon:set_image(theme.play)
+        if gpm_now.artist ~= nil then
             gpmdp.widget:set_text("PAUSED - " .. gpm_now.artist .. " - " .. gpm_now.title)
-            play_pause_icon:set_image(theme.play)
+        else
+            gpmdp.widget:set_text("No tracks")
         end
     end
 end
-function nnnnnn()
-    if mpd_now.state == "play" then
-        mpd_now.artist = mpd_now.artist:upper():gsub("&.-;", string.lower)
-        mpd_now.title = mpd_now.title:upper():gsub("&.-;", string.lower)
-        widget:set_markup(markup.font("Roboto 4", " ")
-                          .. markup.font(theme.taglist_font,
-                          " " .. mpd_now.artist
-                          .. " - " ..
-                          mpd_now.title .. "  ") .. markup.font("Roboto 5", " "))
-        play_pause_icon:set_image(theme.pause)
-    elseif mpd_now.state == "pause" then
-        widget:set_markup(markup.font("Roboto 4", " ") ..
-                          markup.font(theme.taglist_font, " MPD PAUSED  ") ..
-                          markup.font("Roboto 5", " "))
-        play_pause_icon:set_image(theme.play)
-    else
-        widget:set_markup("")
-        play_pause_icon:set_image(theme.play)
-    end
-end
-
--- Music
 local music_icon = wibox.widget.imagebox(theme.mpdl)
 local musicbg = wibox.container.background(gpmdp.widget, theme.bg_focus, gears.shape.rectangle)
 local musicwidget = wibox.container.margin(musicbg, 0, 0, 5, 5)
@@ -356,6 +336,11 @@ local net = lain.widget.net({
 local netbg = wibox.container.background(net.widget, theme.bg_focus, gears.shape.rectangle)
 local networkwidget = wibox.container.margin(netbg, 0, 0, 5, 5)
 
+-- Systray
+local systray = wibox.widget.systray()
+local systraybg = wibox.container.background(systray, theme.bg_focus, gears.shape.rectangle)
+local systraywidget = wibox.container.margin(systraybg, 0, 0, 5, 5)
+
 -- Launcher
 local mylauncher = awful.widget.button({ image = theme.awesome_icon_launcher })
 mylauncher:connect_signal("button::press", function() awful.util.mymainmenu:toggle() end)
@@ -441,7 +426,8 @@ function theme.at_screen_connect(s)
         { -- Right widgets
             layout = wibox.layout.fixed.horizontal,
 
-            --wibox.widget.systray(),
+            systraywidget,
+
             --mail.widget,
 
             spr_right,

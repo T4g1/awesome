@@ -21,7 +21,7 @@ local gpmdp = {
         font = "Roboto 10",
         title     = "Now playing",
         icon_size = 48,
-        timeout   = 6
+        timeout   = 3
     },
     notification  = nil,
     current_track = nil,
@@ -30,13 +30,23 @@ local gpmdp = {
 }
 
 function gpmdp.update(widget, stdout)
-    widget:set_text("")
-    local filelines = gpmdp.get_lines(gpmdp.file_location)
-    if not filelines then return end -- GPMDP not running?
-
     widget.font = "Roboto 10"
 
-    gpm_now = { running = stdout ~= '' }
+    -- GPMDP not running?
+    local filelines = gpmdp.get_lines(gpmdp.file_location)
+    if not filelines then
+        gpmdp.widget:set_text("No tracks")
+        return
+    end
+
+    gpm_now = {
+        running = true,
+        artist = nil,
+        album = nil,
+        title = nil,
+        cover_url = nil,
+        playing = false
+    }
 
     if not next(filelines) then
         gpm_now.running = false
@@ -60,6 +70,7 @@ function gpmdp.update(widget, stdout)
             gpmdp.notification_on()
         end
     elseif not gpm_now.running then
+        gpmdp.widget:set_text("not running")
         gpmdp.current_track = nil
     end
 
@@ -69,6 +80,10 @@ end
 function gpmdp.notification_on()
     local gpm_now = gpmdp.latest
     gpmdp.current_track = gpm_now.title
+
+    if gpm_now.cover_url == nil then
+        return
+    end
 
     if gpmdp.followtag then gpmdp.notification_preset.screen = awful.screen.focused() end
     awful.spawn.easy_async({"curl", gpm_now.cover_url, "-o", gpmdp.album_cover}, function(stdout)
