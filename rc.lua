@@ -262,54 +262,25 @@ globalkeys = awful.util.table.join(
     awful.key({ modkey,           }, "s",      hotkeys_popup.show_help,
               {description="show help", group="awesome"}),
     -- Tag browsing
-    awful.key({ modkey,           }, "Left",   awful.tag.viewprev,
-              {description = "view previous", group = "tag"}),
-    awful.key({ modkey,           }, "Right",  awful.tag.viewnext,
+    awful.key({ "Control",           }, "Tab",  function () lain.util.tag_view_nonempty(1) end,
+              {description = "view next nonempty", group = "tag"}),
+    awful.key({ "Control",           }, "Right",  awful.tag.viewnext,
               {description = "view next", group = "tag"}),
-    --awful.key({ modkey,           }, "Escape", awful.tag.history.restore,
-    --          {description = "go back", group = "tag"}),
-
-    -- Non-empty tag browsing
-    awful.key({ altkey }, "Left", function () lain.util.tag_view_nonempty(-1) end,
-              {description = "view  previous nonempty", group = "tag"}),
-    awful.key({ altkey }, "Right", function () lain.util.tag_view_nonempty(1) end,
-              {description = "view  previous nonempty", group = "tag"}),
+    awful.key({ "Control",           }, "Left",  awful.tag.viewprev,
+              {description = "view previous", group = "tag"}),
 
     -- Default client focus
     awful.key({ altkey }, "Tab", function () awful.client.focus.byidx( 1) end,
               {description = "focus next by index", group = "client"}),
-
-    -- By direction client focus
-    awful.key({ modkey }, "j",
-        function()
-            awful.client.focus.bydirection("down")
-            if client.focus then client.focus:raise() end
-        end),
-    awful.key({ modkey }, "k",
-        function()
-            awful.client.focus.bydirection("up")
-            if client.focus then client.focus:raise() end
-        end),
-    awful.key({ modkey }, "h",
-        function()
-            awful.client.focus.bydirection("left")
-            if client.focus then client.focus:raise() end
-        end),
-    awful.key({ modkey }, "l",
-        function()
-            awful.client.focus.bydirection("right")
-            if client.focus then client.focus:raise() end
-        end),
 
     -- Layout manipulation
     awful.key({ modkey, "Shift"   }, "j", function () awful.client.swap.byidx(  1)    end,
               {description = "swap with next client by index", group = "client"}),
     awful.key({ modkey, "Shift"   }, "k", function () awful.client.swap.byidx( -1)    end,
               {description = "swap with previous client by index", group = "client"}),
-    awful.key({ modkey, "Control" }, "j", function () awful.screen.focus_relative( 1) end,
+
+    awful.key({ modkey            }, "Tab", function () awful.screen.focus_relative(1) end,
               {description = "focus the next screen", group = "screen"}),
-    awful.key({ modkey, "Control" }, "k", function () awful.screen.focus_relative(-1) end,
-              {description = "focus the previous screen", group = "screen"}),
 
     -- Show/Hide Wibox
     awful.key({ modkey }, "b",
@@ -322,10 +293,6 @@ globalkeys = awful.util.table.join(
             end
         end,
         {description = "toggle wibox", group = "awesome"}),
-
-    -- On the fly useless gaps change
-    awful.key({ altkey, "Control" }, "=", function () lain.util.useless_gaps_resize(1) end),
-    awful.key({ altkey, "Control" }, "-", function () lain.util.useless_gaps_resize(-1) end),
 
     -- Standard program
     awful.key({ modkey,           }, "Return", function () awful.spawn(terminal) end,
