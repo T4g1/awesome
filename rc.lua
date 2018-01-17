@@ -262,11 +262,11 @@ globalkeys = awful.util.table.join(
     awful.key({ modkey,           }, "s",      hotkeys_popup.show_help,
               {description="show help", group="awesome"}),
     -- Tag browsing
-    awful.key({ "Control",           }, "Tab",  function () lain.util.tag_view_nonempty(1) end,
+    awful.key({ modkey, "Control" }, "Tab",  function () lain.util.tag_view_nonempty(1) end,
               {description = "view next nonempty", group = "tag"}),
-    awful.key({ "Control",           }, "Right",  awful.tag.viewnext,
+    awful.key({ modkey, "Control" }, "Right",  awful.tag.viewnext,
               {description = "view next", group = "tag"}),
-    awful.key({ "Control",           }, "Left",  awful.tag.viewprev,
+    awful.key({ modkey, "Control" }, "Left",  awful.tag.viewprev,
               {description = "view previous", group = "tag"}),
 
     -- Default client focus
