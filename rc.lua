@@ -289,6 +289,9 @@ globalkeys = awful.util.table.join(
     awful.key({ altkey }, "p", function() os.execute(screenshot) end,
               {description="take a screenshot", group="awesome"}),
 
+    awful.key({ modkey }, "b", function () mouse.screen.mywibox.visible = not mouse.screen.mywibox.visible end,
+              {description="Toggle wibox visibility", group="awesome"}),
+
     -- Hotkeys
     awful.key({ modkey,           }, "s",      hotkeys_popup.show_help,
               {description="show help", group="awesome"}),
