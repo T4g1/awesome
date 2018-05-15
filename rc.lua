@@ -14,11 +14,14 @@ local wibox         = require("wibox")
 local beautiful     = require("beautiful")
 local naughty       = require("naughty")
 local lain          = require("lain")
---local menubar       = require("menubar")
 local freedesktop   = require("freedesktop")
 local hotkeys_popup = require("awful.hotkeys_popup").widget
-local remote = require("awful.remote")
-local lfs = require("lfs")
+local remote        = require("awful.remote")
+local lfs           = require("lfs")
+local remote        = require("awful.remote")
+local screenful     = require("screenful")
+local xrandr        = require("xrandr")
+
 -- }}}
 
 -- {{{ Error handling
@@ -63,50 +66,18 @@ local modkey       = "Mod4"
 local altkey       = "Mod1"
 local terminal     = "xterm"
 local editor       = os.getenv("EDITOR") or "nano"
-local gui_editor   = "gvim"
 local browser      = "chromium"
 local guieditor    = "subl3"
 local screenshot   = "deepin-screenshot"
 
+local terminal_screen = 1
 local browser_screen = 1
 local editor_screen = 2
 local browser_selected = true
 local editor_selected = true
 
-if screen:count() < browser_screen then
-  browser_screen = 1
-  browser_selected = false
-end
-
-if screen:count() < editor_screen then
-  editor_screen = 1
-  editor_selected = false
-end
-
 awful.util.terminal = terminal
 awful.util.tagnames = {}
-awful.tag.add("TERMINAL", {
-    layout             = lain.layout.termfair.center,
-    screen             = 1,
-    selected           = false,
-})
-awful.tag.add("BROWSER", {
-    layout             = awful.layout.suit.floating,
-    screen             = browser_screen,
-    selected           = browser_selected,
-})
-awful.tag.add("EDITOR", {
-    layout             = awful.layout.suit.floating,
-    screen             = editor_screen,
-    selected           = editor_selected,
-})
-
-for i=1,screen:count() do
-  awful.tag.add("OTHER", { layout = lain.layout.termfair.center, screen = i })
-  for j=1,5 do
-    awful.tag.add(j, { layout = lain.layout.termfair.center, screen = i })
-  end
-end
 
 awful.layout.layouts = {
     awful.layout.suit.floating,
@@ -116,54 +87,55 @@ awful.layout.layouts = {
     lain.layout.termfair.center,
 }
 awful.util.taglist_buttons = awful.util.table.join(
-                    awful.button({ }, 1, function(t) t:view_only() end),
-                    awful.button({ modkey }, 1, function(t)
-                                              if client.focus then
-                                                  client.focus:move_to_tag(t)
-                                              end
-                                          end),
-                    awful.button({ }, 3, awful.tag.viewtoggle),
-                    awful.button({ modkey }, 3, function(t)
-                                              if client.focus then
-                                                  client.focus:toggle_tag(t)
-                                              end
-                                          end)
-                )
+    awful.button({ }, 1, function(t) t:view_only() end),
+    awful.button({ modkey }, 1, function(t)
+        if client.focus then
+            client.focus:move_to_tag(t)
+        end
+    end),
+    awful.button({ }, 3, awful.tag.viewtoggle),
+    awful.button({ modkey }, 3, function(t)
+        if client.focus then
+            client.focus:toggle_tag(t)
+        end
+    end)
+)
 awful.util.tasklist_buttons = awful.util.table.join(
-                     awful.button({ }, 1, function (c)
-                                              if c == client.focus then
-                                                  c.minimized = true
-                                              else
-                                                  -- Without this, the following
-                                                  -- :isvisible() makes no sense
-                                                  c.minimized = false
-                                                  if not c:isvisible() and c.first_tag then
-                                                      c.first_tag:view_only()
-                                                  end
-                                                  -- This will also un-minimize
-                                                  -- the client, if needed
-                                                  client.focus = c
-                                                  c:raise()
-                                              end
-                                          end),
-                     awful.button({ }, 3, function()
-                         local instance = nil
+    awful.button({ }, 1, function (c)
+        if c == client.focus then
+            c.minimized = true
+        else
+            -- Without this, the following
+            -- :isvisible() makes no sense
+            c.minimized = false
+            if not c:isvisible() and c.first_tag then
+                c.first_tag:view_only()
+            end
+            -- This will also un-minimize
+            -- the client, if needed
+            client.focus = c
+            c:raise()
+        end
+    end),
+    awful.button({ }, 3, function()
+        local instance = nil
 
-                         return function ()
-                             if instance and instance.wibox.visible then
-                                 instance:hide()
-                                 instance = nil
-                             else
-                                 instance = awful.menu.clients({ theme = { width = 250 } })
-                             end
-                        end
-                     end),
-                     awful.button({ }, 4, function ()
-                                              awful.client.focus.byidx(1)
-                                          end),
-                     awful.button({ }, 5, function ()
-                                              awful.client.focus.byidx(-1)
-                                          end))
+        return function ()
+            if instance and instance.wibox.visible then
+                instance:hide()
+                instance = nil
+            else
+                instance = awful.menu.clients({ theme = { width = 250 } })
+            end
+        end
+    end),
+    awful.button({ }, 4, function ()
+        awful.client.focus.byidx(1)
+    end),
+    awful.button({ }, 5, function ()
+        awful.client.focus.byidx(-1)
+    end)
+)
 
 lain.layout.termfair.nmaster           = 3
 lain.layout.termfair.ncol              = 1
@@ -198,8 +170,43 @@ awful.util.mymainmenu = freedesktop.menu.build({
         -- other triads can be put here
     }
 })
---menubar.utils.terminal = terminal -- Set the Menubar terminal for applications that require it
 -- }}}
+
+-- {{{ Wallpappers
+local wp_path = "/home/t4g1/images/wallpapers/"
+local wp_files = {}
+
+for file in lfs.dir(wp_path) do
+    table.insert(wp_files, file)
+end
+
+local taken = {}
+
+local function add_wallpaper(s)
+    wp_index = math.random(1, #wp_files)
+    while taken[wp_index] do
+        wp_index = math.random(1, #wp_files)
+    end
+
+    taken[wp_index] = true
+    gears.wallpaper.maximized(wp_path .. wp_files[wp_index], s, true)
+end
+
+local function set_wallpaper()
+    taken = {}
+
+    for s = 1, screen.count() do
+        add_wallpaper(s)
+    end
+end
+-- }}}
+
+wp_timer = gears.timer {
+    timeout   = 3600,
+    autostart = true,
+    callback  = set_wallpaper
+}
+set_wallpaper()
 
 -- {{{ Screen
 -- Re-set wallpaper when a screen's geometry changes (e.g. different resolution)
@@ -214,37 +221,53 @@ screen.connect_signal("property::geometry", function(s)
         gears.wallpaper.maximized(wallpaper, s, true)
     end
 end)
+
 -- Create a wibox for each screen and add it
-awful.screen.connect_for_each_screen(function(s) beautiful.at_screen_connect(s) end)
--- }}}
+awful.screen.connect_for_each_screen(function(s)
+    beautiful.at_screen_connect(s)
 
-wp_path = "/home/t4g1/images/wallpapers/"
-set_wallpaper = function()
-  wp_files = {}
-  for file in lfs.dir(wp_path) do
-    table.insert(wp_files, file)
-  end
-
-  -- set wallpaper to current index for all screens
-  local taken = {}
-  local wp_index = 1
-  for s = 1, screen.count() do
-    -- get next random index
-    wp_index = math.random( 1, #wp_files)
-    while taken[wp_index] do
-      wp_index = math.random( 1, #wp_files)
+    if screen:count() < browser_screen then
+        browser_screen = 1
+        browser_selected = false
     end
-    taken[wp_index] = true
-    gears.wallpaper.maximized(wp_path .. wp_files[wp_index], s, true)
-  end
-end
 
-wp_timer = gears.timer {
-    timeout   = 3600,
-    autostart = true,
-    callback  = set_wallpaper
-}
-set_wallpaper()
+    if screen:count() < editor_screen then
+        editor_screen = 1
+        editor_selected = false
+    end
+
+    if s.index == terminal_screen then
+        awful.tag.add("TERMINAL", {
+            layout             = awful.layout.suit.tile,
+            screen             = terminal_screen,
+            selected           = false,
+        })
+    end
+
+    if s.index == editor_screen then
+        awful.tag.add("EDITOR", {
+            layout             = awful.layout.suit.floating,
+            screen             = editor_screen,
+            selected           = editor_selected,
+        })
+    end
+
+    if s.index == browser_screen then
+        awful.tag.add("BROWSER", {
+            layout             = awful.layout.suit.floating,
+            screen             = browser_screen,
+            selected           = browser_selected,
+        })
+    end
+
+    awful.tag.add("OTHER", { layout = lain.layout.termfair.center, screen = s.index })
+    for i=1,5 do
+        awful.tag.add(i, { layout = lain.layout.termfair.center, screen = s.index })
+    end
+
+    add_wallpaper(s.index)
+end)
+-- }}}
 
 -- {{{ Mouse bindings
 root.buttons(awful.util.table.join(
@@ -254,6 +277,14 @@ root.buttons(awful.util.table.join(
 
 -- {{{ Key bindings
 globalkeys = awful.util.table.join(
+    -- Swap to all possible arrangements of monitors
+    awful.key({ modkey }, "p", function() xrandr.xrandr() end,
+              {description="switch external displays", group="screen"}),
+
+    -- Lock screen
+    awful.key({ modkey }, "l", function() os.execute("xscreensaver-command -lock") end,
+              {description="lock screen", group="awesome"}),
+
     -- Take a screenshot
     awful.key({ altkey }, "p", function() os.execute(screenshot) end,
               {description="take a screenshot", group="awesome"}),
@@ -446,7 +477,7 @@ client.connect_signal("manage", function (c)
     setTitlebar(c,
       c.floating or
       (
-        c.first_tag.layout == awful.layout.suit.floating and
+        c.first_tag ~= nil and c.first_tag.layout == awful.layout.suit.floating and
         c.class ~= "Subl3" and
         (
           c.role ~= "browser" or

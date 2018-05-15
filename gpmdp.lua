@@ -13,7 +13,7 @@ local io, next, os, string, table = io, next, os, string, table
 -- requires: curl and dkjson or lain
 
 local gpmdp = {
-    notify        = "on",
+    notify        = "off",
     followtag     = true,
     file_location = os.getenv("HOME") .. "/.config/Google Play Music Desktop Player/json_store/playback.json",
     notification_preset = {
