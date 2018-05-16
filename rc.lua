@@ -76,6 +76,33 @@ local editor_screen = 2
 local browser_selected = true
 local editor_selected = true
 
+-- {{{ Set screen wibox visibility
+local function set_wibox_visibility(s, visibility)
+    s.mywibox.visible = visibility
+    if s.mybottomwibox then
+        s.mybottomwibox.visible = visibility
+    end
+end
+-- }}}
+
+-- {{{ Hide screen wibox
+local function hide_wibox(s)
+    set_wibox_visibility(s, false)
+end
+-- }}}
+
+-- {{{ Show screen wibox
+local function show_wibox(s)
+    set_wibox_visibility(s, true)
+end
+-- }}}
+
+-- {{{ Toggle screen wibox
+local function toggle_wibox(s)
+    set_wibox_visibility(s, not s.mywibox.visible)
+end
+-- }}}
+
 awful.util.terminal = terminal
 awful.util.tagnames = {}
 
@@ -250,6 +277,10 @@ awful.screen.connect_for_each_screen(function(s)
             screen             = editor_screen,
             selected           = editor_selected,
         })
+
+        if editor_screen > 1 then
+            hide_wibox(s)
+        end
     end
 
     if s.index == browser_screen then
@@ -289,9 +320,6 @@ globalkeys = awful.util.table.join(
     awful.key({ altkey }, "p", function() os.execute(screenshot) end,
               {description="take a screenshot", group="awesome"}),
 
-    awful.key({ modkey }, "b", function () mouse.screen.mywibox.visible = not mouse.screen.mywibox.visible end,
-              {description="Toggle wibox visibility", group="awesome"}),
-
     -- Hotkeys
     awful.key({ modkey,           }, "s",      hotkeys_popup.show_help,
               {description="show help", group="awesome"}),
@@ -319,12 +347,7 @@ globalkeys = awful.util.table.join(
     -- Show/Hide Wibox
     awful.key({ modkey }, "b",
         function ()
-            for s in screen do
-                s.mywibox.visible = not s.mywibox.visible
-                if s.mybottomwibox then
-                    s.mybottomwibox.visible = not s.mybottomwibox.visible
-                end
-            end
+            toggle_wibox(mouse.screen)
         end,
         {description = "toggle wibox", group = "awesome"}),
 
