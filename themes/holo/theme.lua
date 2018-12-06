@@ -186,17 +186,6 @@ local dislike_icon = wibox.widget.imagebox(theme.dislike)
 
 gpmdp.settings = function ()
     local gpm_now = gpmdp.latest
-    if gpmdp.latest.playing then
-        gpmdp.widget:set_text(gpm_now.artist .. " - " .. gpm_now.title)
-        play_pause_icon:set_image(theme.pause)
-    else
-        play_pause_icon:set_image(theme.play)
-        if gpm_now.artist ~= nil then
-            gpmdp.widget:set_text("PAUSED - " .. gpm_now.artist .. " - " .. gpm_now.title)
-        else
-            gpmdp.widget:set_text("No tracks")
-        end
-    end
 
     if gpm_now.artist ~= nil then
         if gpm_now.liked then
@@ -208,6 +197,18 @@ gpmdp.settings = function ()
         else
             like_icon:set_image(theme.like)
             dislike_icon:set_image(theme.dislike)
+        end
+    end
+
+    if gpmdp.latest.playing then
+        gpmdp.widget:set_text(gpm_now.artist .. " - " .. gpm_now.title)
+        play_pause_icon:set_image(theme.pause)
+    else
+        play_pause_icon:set_image(theme.play)
+        if gpm_now.artist ~= nil then
+            gpmdp.widget:set_text(gpm_now.artist .. " - " .. gpm_now.title .. " - PAUSED")
+        else
+            gpmdp.widget:set_text("No tracks")
         end
     end
 end
@@ -438,14 +439,14 @@ function theme.at_screen_connect(s)
 
             spr_left,
             mpd_icon,
-            musicwidget,
-            bar,
             prev_icon,
             next_icon,
             stop_icon,
             play_pause_icon,
             like_icon,
             dislike_icon,
+            bar,
+            musicwidget,
             spr_small,
 
             s.mypromptbox,

@@ -24,6 +24,8 @@ local xrandr        = require("xrandr")
 
 -- }}}
 
+beautiful.notification_icon_size = 48
+
 -- {{{ Error handling
 if awesome.startup_errors then
     naughty.notify({ preset = naughty.config.presets.critical,
@@ -68,7 +70,7 @@ local terminal     = "xterm"
 local editor       = os.getenv("EDITOR") or "nano"
 local browser      = "chromium"
 local guieditor    = "subl3"
-local screenshot   = "deepin-screenshot"
+local screenshot   = "export QT_QPA_PLATFORMTHEME=; deepin-screenshot"
 
 local terminal_screen = 1
 local browser_screen = 1
@@ -265,7 +267,7 @@ awful.screen.connect_for_each_screen(function(s)
 
     if s.index == terminal_screen then
         awful.tag.add("TERMINAL", {
-            layout             = awful.layout.suit.tile,
+            layout             = lain.layout.termfair.center,
             screen             = terminal_screen,
             selected           = false,
         })
@@ -291,9 +293,9 @@ awful.screen.connect_for_each_screen(function(s)
         })
     end
 
-    awful.tag.add("OTHER", { layout = lain.layout.termfair.center, screen = s.index })
+    awful.tag.add("OTHER", { layout = awful.layout.suit.floating, screen = s.index })
     for i=1,5 do
-        awful.tag.add(i, { layout = lain.layout.termfair.center, screen = s.index })
+        awful.tag.add(i, { layout = lain.layout.termfair.floating, screen = s.index })
     end
 
     add_wallpaper(s.index)
@@ -374,8 +376,7 @@ globalkeys = awful.util.table.join(
 )
 
 clientkeys = awful.util.table.join(
-    awful.key({ modkey, "Control" }, "t",
-      awful.titlebar.toggle,
+    awful.key({ modkey, "Control" }, "t",       awful.titlebar.toggle,
       {description = "Toggle title bar", group = "client"}),
     awful.key({ altkey, "Shift"   }, "m",      lain.util.magnify_client                         ),
     awful.key({ modkey,           }, "f",
