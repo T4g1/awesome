@@ -72,11 +72,39 @@ local browser      = "chromium"
 local guieditor    = "subl3"
 local screenshot   = "export QT_QPA_PLATFORMTHEME=; deepin-screenshot"
 
-local terminal_screen = 1
-local browser_screen = 1
-local editor_screen = 2
+--
+--
+----
+----
+----
+----
+----
+----
+----
+----
+----
+--
+local left_screen = 2
+local right_screen = 1
+local terminal_screen = left_screen
+local browser_screen = left_screen
+local editor_screen = right_screen
 local browser_selected = true
 local editor_selected = true
+
+--
+--
+----
+----
+----
+----
+----
+----
+----
+----
+----
+--
+--
 
 -- {{{ Set screen wibox visibility
 local function set_wibox_visibility(s, visibility)

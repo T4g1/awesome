@@ -19,4 +19,4 @@ function run {
 
 run chromium
 run subl3
-run gpmdp
+#run gpmdp
