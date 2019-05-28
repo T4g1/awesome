@@ -252,9 +252,8 @@ end)))
 local kbd_icon = wibox.widget.imagebox(theme.widget_kbd)
 local kbd = lain.widget.contrib.kbdlayout({
     layouts = {
-        { layout = "fr" },
         { layout = "be" },
-        { layout = "us" }
+        { layout = "fr" }
     },
     settings = function()
         kbd_text = " " .. kbdlayout_now.layout .. " "
@@ -314,12 +313,8 @@ theme.volume = lain.widget.alsa({
 })
 
 theme.volume.widget:buttons(awful.util.table.join(
-    --awful.button({}, 1, function() -- left click
-    --    awful.spawn(string.format("%s -e alsamixer", terminal))
-    --end),
     awful.button({}, 3, function() -- right click
-        awful.spawn(string.format("%s set %s 100%%", theme.volume.cmd, theme.volume.channel))
-        theme.volume.update()
+        awful.spawn("pavucontrol")
     end),
     awful.button({}, 1, function() -- left click
         awful.spawn(string.format("%s set %s toggle", theme.volume.cmd, theme.volume.channel))
@@ -477,9 +472,9 @@ function theme.at_screen_connect(s)
             fs_icon,
             fswidget,
             spr_left,
-            bat_icon,
-            batwidget,
-            spr_left,
+            --bat_icon,
+            --batwidget,
+            --spr_left,
             volume_icon,
             volumewidget,
             spr_left,

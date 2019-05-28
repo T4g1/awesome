@@ -19,7 +19,6 @@ local hotkeys_popup = require("awful.hotkeys_popup").widget
 local remote        = require("awful.remote")
 local lfs           = require("lfs")
 local remote        = require("awful.remote")
-local screenful     = require("screenful")
 local xrandr        = require("xrandr")
 
 -- }}}
@@ -69,42 +68,13 @@ local altkey       = "Mod1"
 local terminal     = "xterm"
 local editor       = os.getenv("EDITOR") or "nano"
 local browser      = "chromium"
-local guieditor    = "subl3"
+local guieditor    = "subl"
 local screenshot   = "export QT_QPA_PLATFORMTHEME=; deepin-screenshot"
 
---
---
-----
-----
-----
-----
-----
-----
-----
-----
-----
---
-local left_screen = 2
-local right_screen = 1
-local terminal_screen = left_screen
-local browser_screen = left_screen
-local editor_screen = right_screen
-local browser_selected = true
-local editor_selected = true
-
---
---
-----
-----
-----
-----
-----
-----
-----
-----
-----
---
---
+local terminal_screen = 1
+local browser_screen = 1
+local music_screen = 2
+local editor_screen = 3
 
 -- {{{ Set screen wibox visibility
 local function set_wibox_visibility(s, visibility)
@@ -283,20 +253,26 @@ end)
 awful.screen.connect_for_each_screen(function(s)
     beautiful.at_screen_connect(s)
 
-    if screen:count() < browser_screen then
-        browser_screen = 1
-        browser_selected = false
-    end
+    if s.index == music_screen then
+        awful.tag.add("MUSIC", {
+            layout             = awful.layout.suit.floating,
+            screen             = s.index,
+            selected           = true,
+        })
 
-    if screen:count() < editor_screen then
-        editor_screen = 1
-        editor_selected = false
+        hide_wibox(s)
     end
 
     if s.index == terminal_screen then
         awful.tag.add("TERMINAL", {
             layout             = lain.layout.termfair.center,
-            screen             = terminal_screen,
+            screen             = s.index,
+            selected           = true,
+        })
+
+        awful.tag.add("BROWSER", {
+            layout             = awful.layout.suit.floating,
+            screen             = s.index,
             selected           = false,
         })
     end
@@ -304,21 +280,11 @@ awful.screen.connect_for_each_screen(function(s)
     if s.index == editor_screen then
         awful.tag.add("EDITOR", {
             layout             = awful.layout.suit.floating,
-            screen             = editor_screen,
-            selected           = editor_selected,
+            screen             = s.index,
+            selected           = true,
         })
 
-        if editor_screen > 1 then
-            hide_wibox(s)
-        end
-    end
-
-    if s.index == browser_screen then
-        awful.tag.add("BROWSER", {
-            layout             = awful.layout.suit.floating,
-            screen             = browser_screen,
-            selected           = browser_selected,
-        })
+        hide_wibox(s)
     end
 
     awful.tag.add("OTHER", { layout = awful.layout.suit.floating, screen = s.index })
@@ -483,24 +449,43 @@ awful.rules.rules = {
     { rule_any = { type = { "dialog", "normal" } },
       properties = { titlebars_enabled = true } },
 
-    -- Auto tags
-    { rule = { role = "browser", type = "normal" },
+    { rule = { class = "Chromium", type = "normal" },
       properties = {
-        screen = browser_screen,
+        screen = terminal_screen,
         tag = "BROWSER",
         maximised = true,
         titlebars_enabled = false,
-        floating = false
+        floating = false,
+        border_width = 0
       }
     },
 
-    { rule = { class = "Subl3", type = "normal" },
+    { rule = { class = "Google Play Music Desktop Player", type = "normal" },
+      properties = {
+        screen = music_screen,
+        tag = "BROWSER",
+        maximised = true,
+        titlebars_enabled = false,
+        floating = false,
+        border_width = 0
+      }
+    },
+
+    { rule = { class = "vlc", type = "utility" },
+      properties = {
+        titlebars_enabled = false,
+        border_width = 0
+      }
+    },
+
+    { rule = { class = "Sublime_text", type = "normal" },
       properties = {
         screen = editor_screen,
         tag = "EDITOR",
         maximised = true,
         titlebars_enabled = false,
-        floating = false
+        floating = false,
+        border_width = 0
       }
     }
 }
@@ -519,9 +504,9 @@ local function setTitlebar(client, s)
 end
 
 --Toggle titlebar on floating status change
-client.connect_signal("property::floating", function(c)
-    setTitlebar(c, c.floating)
-end)
+--client.connect_signal("property::floating", function(c)
+--    setTitlebar(c, c.floating)
+--end)
 
 -- {{{ Signals
 -- Signal function to execute when a new client appears.
@@ -529,17 +514,9 @@ client.connect_signal("manage", function (c)
     -- Set the windows at the slave,
     -- i.e. put it at the end of others instead of setting it master.
     -- if not awesome.startup then awful.client.setslave(c) end
-    setTitlebar(c,
-      c.floating or
-      (
-        c.first_tag ~= nil and c.first_tag.layout == awful.layout.suit.floating and
-        c.class ~= "Subl3" and
-        (
-          c.role ~= "browser" or
-          c.type ~= "normal"
-        )
-      )
-    )
+    if c.first_tag ~= nil and c.first_tag.layout == lain.layout.termfair.center and c.class == "XTerm" then
+        setTitlebar(c, false)
+    end
 
     if awesome.startup and
       not c.size_hints.user_position
@@ -547,8 +524,6 @@ client.connect_signal("manage", function (c)
         -- Prevent clients from being unreachable after screen count changes.
         awful.placement.no_offscreen(c)
     end
-
-
 end)
 
 -- Add a titlebar if titlebars_enabled is set to true in the rules.
@@ -598,16 +573,18 @@ client.connect_signal("request::titlebars", function(c)
 end)
 
 -- No border for maximized clients
-client.connect_signal("focus",
-    function(c)
-        if c.maximized then -- no borders if only 1 client visible
-            c.border_width = 0
-        elseif #awful.screen.focused().clients > 1 then
-            c.border_width = beautiful.border_width
-            c.border_color = beautiful.border_focus
-        end
-    end)
+client.connect_signal("property::maximized", function(c)
+    if c.maximized then
+        c.border_width = 0
+    --else
+    --    c.border_width = beautiful.border_width
+    end
+end)
+
+client.connect_signal("focus", function(c) c.border_color = beautiful.border_focus end)
 client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_normal end)
 -- }}}
+
+beautiful.systray_icon_spacing = 10
 
 awful.spawn.with_shell("~/.config/awesome/autorun.sh")
